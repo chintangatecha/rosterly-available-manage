@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -56,14 +55,15 @@ export const useEmployees = () => {
     console.log('Updating employee in hook:', updatedEmployee);
     
     try {
+      const loadingToast = toast.loading('Saving changes...');
+      
       // Update the employee in Supabase
       const { error } = await supabase
         .from('profiles')
         .update({
           first_name: updatedEmployee.first_name,
           last_name: updatedEmployee.last_name,
-          email: updatedEmployee.email,
-          // Don't update role as it shouldn't change
+          // Don't update email or role as they shouldn't change
         })
         .eq('id', updatedEmployee.id);
         
@@ -76,11 +76,8 @@ export const useEmployees = () => {
         )
       );
       
+      toast.dismiss(loadingToast);
       toast.success('Employee updated successfully');
-      
-      // Refresh the employee list to ensure we have the latest data
-      await fetchEmployees();
-      
     } catch (error: any) {
       toast.error(error.message || 'Failed to update employee');
       console.error('Error updating employee:', error);

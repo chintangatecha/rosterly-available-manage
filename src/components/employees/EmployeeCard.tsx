@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Edit, Save, X } from 'lucide-react';
@@ -8,7 +7,6 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Employee } from './types';
 import EmployeeAvatar from './EmployeeAvatar';
-import { supabase } from '@/integrations/supabase/client';
 
 interface EmployeeCardProps {
   employee: Employee;
@@ -34,28 +32,6 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, onEmployeeUpdate 
   const saveEmployee = async () => {
     try {
       setIsLoading(true);
-      // Show loading toast
-      const loadingToast = toast.loading('Saving changes...');
-      
-      console.log('Saving employee changes:', {
-        id: employee.id,
-        first_name: editForm.firstName || null,
-        last_name: editForm.lastName || null
-      });
-      
-      // Update the profile in Supabase
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          first_name: editForm.firstName || null,
-          last_name: editForm.lastName || null,
-        })
-        .eq('id', employee.id);
-      
-      // Dismiss loading toast
-      toast.dismiss(loadingToast);
-      
-      if (error) throw error;
       
       // Calculate new initials based on updated data
       const firstNameInitial = editForm.firstName ? editForm.firstName[0] : '';
@@ -71,12 +47,11 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, onEmployeeUpdate 
         initials: initials,
       };
       
-      console.log('Updating employee in UI:', updatedEmployee);
+      console.log('Updating employee from card:', updatedEmployee);
       
-      // Update the parent component's state
+      // Update the parent component's state, which will handle the Supabase update
       onEmployeeUpdate(updatedEmployee);
       setIsEditing(false);
-      toast.success('Employee updated successfully');
     } catch (error: any) {
       toast.error(error.message || 'Failed to update employee');
       console.error('Error updating employee:', error);
