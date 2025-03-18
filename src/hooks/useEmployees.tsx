@@ -38,6 +38,7 @@ export const useEmployees = () => {
         };
       });
       
+      console.log('Fetched employees:', employeeData);
       setEmployees(employeeData);
     } catch (error: any) {
       toast.error(error.message || 'Failed to load employees');
@@ -51,12 +52,21 @@ export const useEmployees = () => {
     fetchEmployees();
   }, []);
 
-  const updateEmployee = (updatedEmployee: Employee) => {
+  const updateEmployee = async (updatedEmployee: Employee) => {
+    console.log('Updating employee in hook:', updatedEmployee);
+    
+    // Update the UI immediately
     setEmployees(prevEmployees => 
       prevEmployees.map(emp => 
         emp.id === updatedEmployee.id ? updatedEmployee : emp
       )
     );
+    
+    // Verify that the update happened in the UI
+    setTimeout(() => {
+      const updatedEmployeeList = employees.find(emp => emp.id === updatedEmployee.id);
+      console.log('Employee after update in state:', updatedEmployeeList);
+    }, 100);
   };
 
   return {

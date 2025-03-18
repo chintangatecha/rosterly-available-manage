@@ -9,6 +9,8 @@ import { useEmployees } from '@/hooks/useEmployees';
 const EmployeeManager: React.FC = () => {
   const { employees, loading, updateEmployee } = useEmployees();
 
+  console.log('EmployeeManager rendering with employees:', employees);
+
   if (loading) {
     return (
       <AnimatedTransition>
@@ -18,6 +20,11 @@ const EmployeeManager: React.FC = () => {
       </AnimatedTransition>
     );
   }
+
+  const handleEmployeeUpdate = (updatedEmployee) => {
+    console.log('Employee update handler called in EmployeeManager:', updatedEmployee);
+    updateEmployee(updatedEmployee);
+  };
 
   return (
     <AnimatedTransition>
@@ -34,7 +41,7 @@ const EmployeeManager: React.FC = () => {
         <CardContent>
           <EmployeesList 
             employees={employees} 
-            onEmployeeUpdate={updateEmployee} 
+            onEmployeeUpdate={handleEmployeeUpdate} 
           />
         </CardContent>
       </Card>

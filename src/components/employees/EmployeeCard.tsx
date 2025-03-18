@@ -37,6 +37,12 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, onEmployeeUpdate 
       // Show loading toast
       const loadingToast = toast.loading('Saving changes...');
       
+      console.log('Saving employee changes:', {
+        id: employee.id,
+        first_name: editForm.firstName || null,
+        last_name: editForm.lastName || null
+      });
+      
       // Update the profile in Supabase
       const { error } = await supabase
         .from('profiles')
@@ -51,27 +57,21 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, onEmployeeUpdate 
       
       if (error) throw error;
       
-      // Get updated data from Supabase to ensure we're in sync
-      const { data: updatedProfile, error: fetchError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', employee.id)
-        .single();
-        
-      if (fetchError) throw fetchError;
-      
-      // Calculate new initials based on the updated profile
-      const firstNameInitial = updatedProfile.first_name ? updatedProfile.first_name[0] : '';
-      const lastNameInitial = updatedProfile.last_name ? updatedProfile.last_name[0] : '';
-      const initials = (firstNameInitial + lastNameInitial).toUpperCase();
+      // Calculate new initials based on updated data
+      const firstNameInitial = editForm.firstName ? editForm.firstName[0] : '';
+      const lastNameInitial = editForm.lastName ? editForm.lastName[0] : '';
+      const initials = (firstNameInitial + lastNameInitial).toUpperCase() || 
+                      employee.email.substring(0, 2).toUpperCase();
       
       // Create the updated employee object with all required fields
       const updatedEmployee: Employee = { 
         ...employee,
-        first_name: updatedProfile.first_name, 
-        last_name: updatedProfile.last_name,
-        initials: initials || employee.email.substring(0, 2).toUpperCase(),
+        first_name: editForm.firstName, 
+        last_name: editForm.lastName,
+        initials: initials,
       };
+      
+      console.log('Updating employee in UI:', updatedEmployee);
       
       // Update the parent component's state
       onEmployeeUpdate(updatedEmployee);
