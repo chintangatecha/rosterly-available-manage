@@ -11,6 +11,11 @@ export type Profile = {
   last_name: string | null;
 }
 
+export type ProfileUpdateData = {
+  first_name?: string | null;
+  last_name?: string | null;
+}
+
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -92,12 +97,39 @@ export const useAuth = () => {
     setLoading(false);
   };
   
+  const updateProfile = async (profileData: ProfileUpdateData) => {
+    if (!user) throw new Error('You must be logged in to update your profile');
+    
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update(profileData)
+        .eq('id', user.id);
+      
+      if (error) throw error;
+      
+      // Update the local profile state with the new data
+      if (profile) {
+        setProfile({
+          ...profile,
+          ...profileData
+        });
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      throw error;
+    }
+  };
+  
   return {
     user,
     profile,
     session,
     loading,
     isManager,
-    signOut
+    signOut,
+    updateProfile
   };
 };
