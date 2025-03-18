@@ -21,32 +21,20 @@ const Auth: React.FC = () => {
     try {
       setLoading(true);
       
-      const { data, error } = await supabase.auth.signInWithPassword({
+      // Simplify the login process
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
       if (error) throw error;
       
-      if (data.user) {
-        // Fetch user profile to determine role
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', data.user.id)
-          .single();
-        
-        if (profileError) throw profileError;
-        
-        // Redirect based on role
-        if (profileData.role === 'manager') {
-          navigate('/manager');
-          toast.success('Welcome back, Manager!');
-        } else {
-          navigate('/employee');
-          toast.success('Welcome back!');
-        }
-      }
+      // Success handling
+      toast.success('Login successful!');
+      
+      // Simple redirect - we'll handle role-based redirection in the AuthLayout
+      navigate('/employee');
+      
     } catch (error: any) {
       toast.error(error.message || 'An error occurred during login');
       console.error('Error logging in:', error);

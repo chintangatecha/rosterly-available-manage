@@ -18,54 +18,38 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const getSession = async () => {
+    // Get initial session
+    const getInitialSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        
+        const { data: { session } } = await supabase.auth.getSession();
         setSession(session);
         setUser(session?.user || null);
         
         if (session?.user) {
-          const { data, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (profileError) throw profileError;
-          setProfile(data as Profile);
+          fetchProfile(session.user.id);
+        } else {
+          setLoading(false);
         }
       } catch (error) {
-        console.error('Error getting session:', error);
-      } finally {
+        console.error('Error getting initial session:', error);
         setLoading(false);
       }
     };
     
-    getSession();
-    
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+    getInitialSession();
+
+    // Set up auth listener
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, newSession) => {
+      console.log('Auth state changed:', event, newSession?.user?.email);
       setSession(newSession);
       setUser(newSession?.user || null);
       
       if (newSession?.user) {
-        const { data, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', newSession.user.id)
-          .single();
-        
-        if (profileError) {
-          console.error('Error fetching profile:', profileError);
-        } else {
-          setProfile(data as Profile);
-        }
+        fetchProfile(newSession.user.id);
       } else {
         setProfile(null);
+        setLoading(false);
       }
-      
-      setLoading(false);
     });
     
     return () => {
@@ -73,11 +57,37 @@ export const useAuth = () => {
     };
   }, []);
   
+  // Simplified profile fetching function
+  const fetchProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      
+      if (error) {
+        console.error('Error fetching profile:', error);
+        setProfile(null);
+      } else {
+        setProfile(data as Profile);
+      }
+    } catch (error) {
+      console.error('Error in fetchProfile:', error);
+      setProfile(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   const isManager = profile?.role === 'manager';
   
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) console.error('Error signing out:', error);
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
   
   return {

@@ -9,7 +9,7 @@ interface AuthLayoutProps {
 }
 
 const AuthLayout: React.FC<AuthLayoutProps> = ({ requiredRole = null }) => {
-  const { user, profile, loading, isManager } = useAuth();
+  const { user, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -27,19 +27,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ requiredRole = null }) => {
     return <Navigate to="/" state={{ from: location }} replace />;
   }
 
-  // Role-based access control
-  if (requiredRole) {
-    // Manager route protection
-    if (requiredRole === 'manager' && !isManager) {
-      return <Navigate to="/employee" replace />;
-    }
-    
-    // Employee route protection (allowing managers to also see employee views)
-    if (requiredRole === 'employee' && profile?.role !== 'employee' && !isManager) {
-      return <Navigate to="/" replace />;
-    }
-  }
-
+  // If logged in, allow access to the requested route
   return <Outlet />;
 };
 
