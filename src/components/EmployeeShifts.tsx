@@ -19,9 +19,13 @@ interface Shift {
 
 const EmployeeShifts = () => {
   // Initialize with Monday as the start of the week
-  const [currentWeekStart, setCurrentWeekStart] = useState(() => 
-    startOfWeek(new Date(), { weekStartsOn: 1 })
-  );
+  const [currentWeekStart, setCurrentWeekStart] = useState(() => {
+    // Get the current date
+    const today = new Date();
+    // Get the start of the week (Monday)
+    return startOfWeek(today, { weekStartsOn: 1 });
+  });
+  
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -30,7 +34,9 @@ const EmployeeShifts = () => {
   const weekDays = Array.from({ length: 7 }).map((_, i) => addDays(currentWeekStart, i));
 
   useEffect(() => {
-    fetchShifts();
+    if (user) {
+      fetchShifts();
+    }
   }, [currentWeekStart, user]);
 
   const fetchShifts = async () => {
@@ -40,6 +46,8 @@ const EmployeeShifts = () => {
       setLoading(true);
       const startDate = format(currentWeekStart, 'yyyy-MM-dd');
       const endDate = format(addDays(currentWeekStart, 6), 'yyyy-MM-dd');
+      
+      console.log(`Fetching shifts from ${startDate} to ${endDate}`);
       
       const { data, error } = await supabase
         .from('shifts')
@@ -59,6 +67,7 @@ const EmployeeShifts = () => {
       }));
       
       setShifts(formattedShifts);
+      console.log('Shifts loaded:', formattedShifts.length);
     } catch (error: any) {
       toast.error(error.message || 'Failed to load shifts');
       console.error('Error fetching shifts:', error);
@@ -68,11 +77,19 @@ const EmployeeShifts = () => {
   };
 
   const previousWeek = () => {
-    setCurrentWeekStart(prevWeekStart => subWeeks(prevWeekStart, 1));
+    setCurrentWeekStart(prevWeekStart => {
+      const newWeekStart = subWeeks(prevWeekStart, 1);
+      console.log('Moving to previous week:', format(newWeekStart, 'yyyy-MM-dd'));
+      return newWeekStart;
+    });
   };
 
   const nextWeek = () => {
-    setCurrentWeekStart(prevWeekStart => addWeeks(prevWeekStart, 1));
+    setCurrentWeekStart(prevWeekStart => {
+      const newWeekStart = addWeeks(prevWeekStart, 1);
+      console.log('Moving to next week:', format(newWeekStart, 'yyyy-MM-dd'));
+      return newWeekStart;
+    });
   };
 
   const getShiftsForDay = (day: Date) => {
