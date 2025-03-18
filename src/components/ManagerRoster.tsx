@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { startOfWeek, subWeeks, addWeeks, addDays, format } from 'date-fns';
+import { startOfWeek, subWeeks, addWeeks, addDays, format, parseISO, isEqual } from 'date-fns';
 import { Calendar, Save, LogOut } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -64,10 +65,10 @@ const ManagerRoster: React.FC = () => {
   
   // Check if employee is available on a specific day
   const isEmployeeAvailable = (employeeId: string, day: Date) => {
-    const dayOfWeek = format(day, 'EEEE');
+    const formattedDate = format(day, 'yyyy-MM-dd');
     return employeeAvailability.some(a => 
       a.user_id === employeeId && 
-      a.day_of_week === dayOfWeek
+      a.date === formattedDate
     );
   };
   

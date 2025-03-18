@@ -12,7 +12,7 @@ export type Database = {
       availability: {
         Row: {
           created_at: string | null
-          day_of_week: string
+          date: string
           end_time: string
           id: string
           start_time: string
@@ -21,7 +21,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
-          day_of_week: string
+          date: string
           end_time: string
           id?: string
           start_time: string
@@ -30,22 +30,14 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
-          day_of_week?: string
+          date?: string
           end_time?: string
           id?: string
           start_time?: string
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "availability_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       profiles: {
         Row: {

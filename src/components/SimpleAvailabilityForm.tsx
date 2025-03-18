@@ -4,26 +4,33 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import AnimatedTransition from './AnimatedTransition';
+import { CalendarIcon } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 const SimpleAvailabilityForm = () => {
-  const [day, setDay] = useState('Monday');
+  const [date, setDate] = useState<Date | undefined>(new Date());
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('17:00');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
   
-  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!user) {
       toast.error('You must be logged in to submit availability');
+      return;
+    }
+    
+    if (!date) {
+      toast.error('Please select a date');
       return;
     }
     
@@ -39,7 +46,7 @@ const SimpleAvailabilityForm = () => {
         .from('availability')
         .insert({
           user_id: user.id,
-          day_of_week: day,
+          date: format(date, 'yyyy-MM-dd'),
           start_time: startTime,
           end_time: endTime
         })
@@ -50,7 +57,7 @@ const SimpleAvailabilityForm = () => {
       
       toast.success('Availability saved successfully!');
       // Clear form
-      setDay('Monday');
+      setDate(new Date());
       setStartTime('09:00');
       setEndTime('17:00');
     } catch (error: any) {
@@ -67,25 +74,35 @@ const SimpleAvailabilityForm = () => {
         <CardHeader>
           <CardTitle>Submit Availability</CardTitle>
           <CardDescription>
-            Enter your availability for a specific day
+            Enter your availability for a specific date
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="day">Day of Week</Label>
-              <Select value={day} onValueChange={setDay}>
-                <SelectTrigger id="day">
-                  <SelectValue placeholder="Select day" />
-                </SelectTrigger>
-                <SelectContent>
-                  {days.map((d) => (
-                    <SelectItem key={d} value={d}>
-                      {d}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="date">Select Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !date && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {date ? format(date, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={setDate}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
 
             <div className="space-y-2">
