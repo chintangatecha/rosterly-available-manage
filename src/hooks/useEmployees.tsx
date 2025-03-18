@@ -21,8 +21,11 @@ export const useEmployees = () => {
       
       // Transform profiles to our component's format
       const employeeData: Employee[] = (profiles || []).map((profile: any, index: number) => {
-        const name = [profile.first_name, profile.last_name].filter(Boolean).join(' ') || profile.email;
-        const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+        // Generate initials from first and last name or use email
+        const firstInitial = profile.first_name ? profile.first_name[0] : '';
+        const lastInitial = profile.last_name ? profile.last_name[0] : '';
+        const initials = (firstInitial + lastInitial).toUpperCase() || 
+                         profile.email.substring(0, 2).toUpperCase();
         
         return {
           id: profile.id,

@@ -21,6 +21,7 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, onEmployeeUpdate 
     firstName: employee.first_name || '',
     lastName: employee.last_name || '',
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -32,9 +33,11 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, onEmployeeUpdate 
 
   const saveEmployee = async () => {
     try {
+      setIsLoading(true);
       // Show loading toast
       const loadingToast = toast.loading('Saving changes...');
       
+      // Update the profile in Supabase
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -58,19 +61,16 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, onEmployeeUpdate 
       if (fetchError) throw fetchError;
       
       // Calculate new initials based on the updated profile
-      const initials = [updatedProfile.first_name, updatedProfile.last_name]
-        .filter(Boolean)
-        .map(n => n[0])
-        .join('')
-        .toUpperCase()
-        .substring(0, 2);
+      const firstNameInitial = updatedProfile.first_name ? updatedProfile.first_name[0] : '';
+      const lastNameInitial = updatedProfile.last_name ? updatedProfile.last_name[0] : '';
+      const initials = (firstNameInitial + lastNameInitial).toUpperCase();
       
-      // Create the updated employee object
+      // Create the updated employee object with all required fields
       const updatedEmployee: Employee = { 
-        ...employee, 
+        ...employee,
         first_name: updatedProfile.first_name, 
         last_name: updatedProfile.last_name,
-        initials 
+        initials: initials || employee.email.substring(0, 2).toUpperCase(),
       };
       
       // Update the parent component's state
@@ -80,6 +80,8 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, onEmployeeUpdate 
     } catch (error: any) {
       toast.error(error.message || 'Failed to update employee');
       console.error('Error updating employee:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -138,6 +140,7 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, onEmployeeUpdate 
                 variant="outline" 
                 size="sm" 
                 onClick={saveEmployee}
+                disabled={isLoading}
                 className="flex items-center gap-1"
               >
                 <Save className="h-4 w-4" />
@@ -147,6 +150,7 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, onEmployeeUpdate 
                 variant="ghost" 
                 size="sm" 
                 onClick={() => setIsEditing(false)}
+                disabled={isLoading}
                 className="flex items-center gap-1"
               >
                 <X className="h-4 w-4" />
