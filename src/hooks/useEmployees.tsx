@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -51,8 +52,8 @@ export const useEmployees = () => {
     fetchEmployees();
   }, []);
 
-  const updateEmployee = async (updatedEmployee: Employee) => {
-    console.log('Updating employee in hook:', updatedEmployee);
+  const updateEmployee = async (id: string, firstName: string, lastName: string) => {
+    console.log('Updating employee in hook:', { id, firstName, lastName });
     
     try {
       const loadingToast = toast.loading('Saving changes...');
@@ -61,23 +62,19 @@ export const useEmployees = () => {
       const { error } = await supabase
         .from('profiles')
         .update({
-          first_name: updatedEmployee.first_name,
-          last_name: updatedEmployee.last_name,
-          // Don't update email or role as they shouldn't change
+          first_name: firstName || null,
+          last_name: lastName || null,
         })
-        .eq('id', updatedEmployee.id);
+        .eq('id', id);
         
       if (error) throw error;
       
-      // Update the UI immediately
-      setEmployees(prevEmployees => 
-        prevEmployees.map(emp => 
-          emp.id === updatedEmployee.id ? updatedEmployee : emp
-        )
-      );
-      
       toast.dismiss(loadingToast);
       toast.success('Employee updated successfully');
+      
+      // Refresh the employees list to get the updated data
+      await fetchEmployees();
+      
     } catch (error: any) {
       toast.error(error.message || 'Failed to update employee');
       console.error('Error updating employee:', error);

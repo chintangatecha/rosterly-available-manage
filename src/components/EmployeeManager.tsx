@@ -3,7 +3,7 @@ import React from 'react';
 import { Users } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import AnimatedTransition from './AnimatedTransition';
-import EmployeesList from './employees/EmployeesList';
+import SimpleEmployeesList from './employees/SimpleEmployeesList';
 import { useEmployees } from '@/hooks/useEmployees';
 
 const EmployeeManager: React.FC = () => {
@@ -21,11 +21,6 @@ const EmployeeManager: React.FC = () => {
     );
   }
 
-  const handleEmployeeUpdate = (updatedEmployee) => {
-    console.log('Employee update handler called in EmployeeManager:', updatedEmployee);
-    updateEmployee(updatedEmployee);
-  };
-
   return (
     <AnimatedTransition>
       <Card className="mb-8">
@@ -39,9 +34,9 @@ const EmployeeManager: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <EmployeesList 
+          <SimpleEmployeesList 
             employees={employees} 
-            onEmployeeUpdate={handleEmployeeUpdate} 
+            onUpdate={updateEmployee} 
           />
         </CardContent>
       </Card>
