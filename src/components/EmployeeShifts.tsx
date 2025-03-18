@@ -1,10 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, Clock, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import { format, addDays, startOfWeek, subWeeks, addWeeks, parseISO } from 'date-fns';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import AnimatedTransition from './AnimatedTransition';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,31 +21,35 @@ interface Shift {
 const EmployeeShifts = () => {
   const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [shifts, setShifts] = useState<Shift[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
   
   const weekDays = Array.from({ length: 7 }).map((_, i) => addDays(currentWeekStart, i));
 
-  useEffect(() => {
-    fetchShifts();
-  }, [currentWeekStart]);
-
   const fetchShifts = async () => {
-    if (!user) return;
+    if (!user) {
+      setError("Please log in to view your shifts");
+      return;
+    }
     
     try {
       setLoading(true);
+      setError(null);
+      
       const startDate = format(currentWeekStart, 'yyyy-MM-dd');
       const endDate = format(addDays(currentWeekStart, 6), 'yyyy-MM-dd');
       
-      const { data, error } = await supabase
+      const { data, error: supabaseError } = await supabase
         .from('shifts')
         .select('*')
         .eq('user_id', user.id)
         .gte('date', startDate)
         .lte('date', endDate);
       
-      if (error) throw error;
+      if (supabaseError) {
+        throw supabaseError;
+      }
       
       // Transform shifts data
       const formattedShifts: Shift[] = (data || []).map(shift => ({
@@ -55,13 +60,18 @@ const EmployeeShifts = () => {
       }));
       
       setShifts(formattedShifts);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to load shifts');
-      console.error('Error fetching shifts:', error);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load shifts');
+      console.error('Error fetching shifts:', err);
     } finally {
       setLoading(false);
     }
   };
+
+  // Fetch shifts when the component mounts or the week changes
+  useEffect(() => {
+    fetchShifts();
+  }, [user, currentWeekStart]);
 
   const previousWeek = () => {
     setCurrentWeekStart(subWeeks(currentWeekStart, 1));
@@ -75,6 +85,11 @@ const EmployeeShifts = () => {
     return shifts.filter(shift => 
       format(shift.date, 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd')
     );
+  };
+
+  const handleRefresh = () => {
+    fetchShifts();
+    toast.info("Refreshing shifts data...");
   };
 
   return (
@@ -101,6 +116,9 @@ const EmployeeShifts = () => {
               <Button variant="outline" size="sm" onClick={nextWeek}>
                 <ChevronRight size={16} />
               </Button>
+              <Button variant="outline" size="sm" onClick={handleRefresh} title="Refresh shifts">
+                <RefreshCw size={16} />
+              </Button>
             </div>
           </div>
           <CardDescription>
@@ -109,9 +127,26 @@ const EmployeeShifts = () => {
         </CardHeader>
         
         <CardContent>
-          {loading ? (
-            <div className="flex justify-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+          {error ? (
+            <div className="p-6 text-center">
+              <p className="text-red-500 mb-2">{error}</p>
+              <Button onClick={fetchShifts} variant="outline" size="sm">
+                Try Again
+              </Button>
+            </div>
+          ) : loading ? (
+            <div className="grid grid-cols-7 gap-4">
+              {weekDays.map((day, i) => (
+                <div key={i} className="border rounded-lg">
+                  <div className="text-center py-2 font-medium rounded-t-lg bg-accent/50">
+                    <div>{format(day, 'EEE')}</div>
+                    <div className="text-xs text-muted-foreground mt-1">{format(day, 'MMM d')}</div>
+                  </div>
+                  <div className="p-3 min-h-[120px]">
+                    <Skeleton className="w-full h-16" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <div className="grid grid-cols-7 gap-4">
