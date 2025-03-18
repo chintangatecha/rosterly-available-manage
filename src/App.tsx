@@ -23,10 +23,15 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             
-            {/* Protected routes - simplified to just check for authentication */}
+            {/* Role-specific protected routes */}
             <Route element={<AuthLayout />}>
-              <Route path="/manager" element={<Manager />} />
-              <Route path="/employee" element={<Employee />} />
+              <Route element={<AuthLayout requiredRole="manager" />}>
+                <Route path="/manager" element={<Manager />} />
+              </Route>
+              
+              <Route element={<AuthLayout requiredRole="employee" />}>
+                <Route path="/employee" element={<Employee />} />
+              </Route>
             </Route>
             
             <Route path="*" element={<NotFound />} />

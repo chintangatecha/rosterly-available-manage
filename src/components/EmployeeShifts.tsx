@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, Clock, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import { format, addDays, startOfWeek, subWeeks, addWeeks, parseISO } from 'date-fns';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -106,12 +106,22 @@ const EmployeeShifts = () => {
           <CardDescription>
             Your assigned shifts for the selected week
           </CardDescription>
+          <div className="flex justify-end mt-2">
+            <Button variant="outline" size="sm" onClick={fetchShifts} className="gap-2">
+              <RefreshCw size={14} />
+              Refresh
+            </Button>
+          </div>
         </CardHeader>
         
         <CardContent>
           {loading ? (
             <div className="flex justify-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+            </div>
+          ) : shifts.length === 0 ? (
+            <div className="text-center py-16">
+              <p className="text-muted-foreground">No shifts scheduled for this week</p>
             </div>
           ) : (
             <div className="grid grid-cols-7 gap-4">

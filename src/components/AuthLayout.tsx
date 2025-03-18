@@ -9,7 +9,7 @@ interface AuthLayoutProps {
 }
 
 const AuthLayout: React.FC<AuthLayoutProps> = ({ requiredRole = null }) => {
-  const { user, loading } = useAuth();
+  const { user, profile, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -27,7 +27,17 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ requiredRole = null }) => {
     return <Navigate to="/" state={{ from: location }} replace />;
   }
 
-  // If logged in, allow access to the requested route
+  // If requiredRole is specified, check if user has that role
+  if (requiredRole && profile?.role !== requiredRole) {
+    // Redirect to appropriate dashboard based on role
+    if (profile?.role === 'manager') {
+      return <Navigate to="/manager" replace />;
+    } else {
+      return <Navigate to="/employee" replace />;
+    }
+  }
+
+  // If logged in and has the required role (or no role required), allow access to the requested route
   return <Outlet />;
 };
 
