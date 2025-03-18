@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { startOfWeek, subWeeks, addWeeks, format } from 'date-fns';
+import { startOfWeek, subWeeks, addWeeks, addDays, format } from 'date-fns';
 import { Calendar, Save, LogOut } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -39,7 +38,8 @@ const ManagerRoster: React.FC = () => {
     removeShift
   } = useShiftManagement();
 
-  const weekDays = Array.from({ length: 7 }).map((_, i) => addWeeks(currentWeekStart, 0).setDate(currentWeekStart.getDate() + i));
+  // Fixed: Create an array of Date objects using addDays instead of setDate
+  const weekDays = Array.from({ length: 7 }).map((_, i) => addDays(currentWeekStart, i));
 
   useEffect(() => {
     fetchShifts();
