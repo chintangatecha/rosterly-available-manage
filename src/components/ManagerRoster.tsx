@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, ChevronLeft, ChevronRight, Users, Clock, Save, Plus, LogOut, RefreshCw } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight, Users, Clock, Save, Plus, LogOut } from 'lucide-react';
 import { format, addDays, startOfWeek, subWeeks, addWeeks, parseISO } from 'date-fns';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -85,72 +85,61 @@ const ManagerRoster: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [employeeAvailability, setEmployeeAvailability] = useState<AvailabilityRecord[]>([]);
-  const [refreshing, setRefreshing] = useState(false);
   
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   
   const weekDays = Array.from({ length: 7 }).map((_, i) => addDays(currentWeekStart, i));
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      console.log("Fetching data as manager...");
-      
-      // Fetch all employees
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('role', 'employee');
-      
-      if (profilesError) {
-        console.error("Error fetching employee profiles:", profilesError);
-        throw profilesError;
-      }
-      
-      console.log("Fetched employee profiles:", profiles);
-      
-      // Transform profiles to our component's format
-      const employeeData: Employee[] = (profiles as ProfileRecord[]).map((profile, index) => {
-        const name = [profile.first_name, profile.last_name].filter(Boolean).join(' ') || profile.email;
-        const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-        
-        return {
-          id: profile.id,
-          name,
-          initials,
-          avatarUrl: '',
-          color: colorClasses[index % colorClasses.length]
-        };
-      });
-      
-      setEmployees(employeeData);
-      
-      // Fetch all availability
-      const { data: availability, error: availabilityError } = await supabase
-        .from('availability')
-        .select('*');
-      
-      if (availabilityError) {
-        console.error("Error fetching availability:", availabilityError);
-        throw availabilityError;
-      }
-      
-      console.log("Fetched availability data:", availability);
-      setEmployeeAvailability(availability as AvailabilityRecord[]);
-      
-      // Fetch current shifts
-      await fetchShifts();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to load data');
-      console.error('Error fetching data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-  
   useEffect(() => {
-    fetchData();
+    const fetchEmployees = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch all employees
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('role', 'employee');
+        
+        if (profilesError) throw profilesError;
+        
+        // Transform profiles to our component's format
+        const employeeData: Employee[] = (profiles as ProfileRecord[]).map((profile, index) => {
+          const name = [profile.first_name, profile.last_name].filter(Boolean).join(' ') || profile.email;
+          const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+          
+          return {
+            id: profile.id,
+            name,
+            initials,
+            avatarUrl: '',
+            color: colorClasses[index % colorClasses.length]
+          };
+        });
+        
+        setEmployees(employeeData);
+        
+        // Fetch all availability
+        const { data: availability, error: availabilityError } = await supabase
+          .from('availability')
+          .select('*');
+        
+        if (availabilityError) throw availabilityError;
+        
+        setEmployeeAvailability(availability as AvailabilityRecord[]);
+        
+        // Fetch current shifts
+        await fetchShifts();
+      } catch (error: any) {
+        toast.error(error.message || 'Failed to load data');
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchEmployees();
   }, []);
   
   const fetchShifts = async () => {
@@ -159,12 +148,7 @@ const ManagerRoster: React.FC = () => {
         .from('shifts')
         .select('*');
       
-      if (shiftsError) {
-        console.error("Error fetching shifts:", shiftsError);
-        throw shiftsError;
-      }
-      
-      console.log("Fetched shifts data:", shiftsData);
+      if (shiftsError) throw shiftsError;
       
       // Transform shifts to our component's format
       const transformedShifts: Shift[] = (shiftsData as ShiftRecord[]).map(shift => ({
@@ -180,13 +164,6 @@ const ManagerRoster: React.FC = () => {
       toast.error(error.message || 'Failed to load shifts');
       console.error('Error fetching shifts:', error);
     }
-  };
-
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await fetchData();
-    setRefreshing(false);
-    toast.success("Data refreshed successfully");
   };
 
   const previousWeek = () => {
@@ -296,11 +273,7 @@ const ManagerRoster: React.FC = () => {
         <h1 className="text-3xl font-bold mb-2">Roster Management</h1>
         <p className="text-muted-foreground">Create and manage your team's schedule</p>
         
-        <div className="mt-4 flex justify-between">
-          <Button variant="outline" size="sm" onClick={handleRefresh} className="gap-2" disabled={refreshing}>
-            <RefreshCw size={16} className={refreshing ? "animate-spin" : ""} />
-            {refreshing ? "Refreshing..." : "Refresh Data"}
-          </Button>
+        <div className="mt-4 flex justify-end">
           <Button variant="outline" size="sm" onClick={handleLogout} className="gap-2">
             <LogOut size={16} />
             Logout
@@ -343,137 +316,127 @@ const ManagerRoster: React.FC = () => {
         </CardHeader>
         
         <CardContent className="px-2">
-          {employees.length === 0 ? (
-            <div className="py-8 text-center">
-              <p className="text-muted-foreground">No employees found. Please add employees to the system.</p>
-            </div>
-          ) : employeeAvailability.length === 0 && availabilityView ? (
-            <div className="py-8 text-center">
-              <p className="text-muted-foreground">No availability data found. Employees need to submit their availability.</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <div className="min-w-[800px]">
-                {/* Header row with days */}
-                <div className="grid grid-cols-[200px_repeat(7,1fr)] border-b border-border">
-                  <div className="px-4 py-3 text-sm font-medium text-muted-foreground">
-                    Staff
-                  </div>
-                  {weekDays.map((day) => (
-                    <div
-                      key={format(day, 'yyyy-MM-dd')}
-                      className="px-2 py-3 text-center text-sm"
-                    >
-                      <div className="font-medium">{format(day, 'EEE')}</div>
-                      <div className="text-xs text-muted-foreground">{format(day, 'MMM d')}</div>
-                    </div>
-                  ))}
+          <div className="overflow-x-auto">
+            <div className="min-w-[800px]">
+              {/* Header row with days */}
+              <div className="grid grid-cols-[200px_repeat(7,1fr)] border-b border-border">
+                <div className="px-4 py-3 text-sm font-medium text-muted-foreground">
+                  Staff
                 </div>
-                
-                {/* Employee rows */}
-                {employees.map((employee) => (
+                {weekDays.map((day) => (
                   <div
-                    key={employee.id}
-                    className="grid grid-cols-[200px_repeat(7,1fr)] border-b border-border hover:bg-accent/5"
+                    key={format(day, 'yyyy-MM-dd')}
+                    className="px-2 py-3 text-center text-sm"
                   >
-                    <div className="px-4 py-4 flex items-center gap-3">
-                      <Avatar>
-                        <AvatarImage src={employee.avatarUrl} />
-                        <AvatarFallback className={employee.color}>
-                          {employee.initials}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="font-medium truncate">{employee.name}</span>
-                    </div>
-                    
-                    {weekDays.map((day) => {
-                      const dayShifts = getShiftsForDayAndEmployee(day, employee.id);
-                      const employeeAvailable = isEmployeeAvailable(employee.id, day);
-                      
-                      return (
-                        <div
-                          key={format(day, 'yyyy-MM-dd')}
-                          className={`p-2 border-l border-border relative ${
-                            availabilityView && !employeeAvailable ? 'bg-red-50/30' : 
-                            availabilityView && employeeAvailable ? 'bg-green-50/30' : ''
-                          }`}
-                        >
-                          {availabilityView && (
-                            <div className="absolute inset-0 flex items-center justify-center text-xs font-medium">
-                              {employeeAvailable ? (
-                                <span className="text-green-600">Available</span>
-                              ) : (
-                                <span className="text-red-500">Unavailable</span>
-                              )}
-                            </div>
-                          )}
-                          
-                          {!availabilityView && (
-                            <>
-                              {dayShifts.length > 0 ? (
-                                dayShifts.map((shift) => (
-                                  <motion.div
-                                    key={shift.id}
-                                    initial={{ scale: 0.95, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }}
-                                    className="bg-primary/10 border border-primary/20 rounded-lg p-2 text-xs mb-1 relative group"
-                                  >
-                                    <div className="flex items-center gap-1 mb-1">
-                                      <Clock size={12} className="text-primary" />
-                                      <span>
-                                        {shift.startTime} - {shift.endTime}
-                                      </span>
-                                    </div>
-                                    
-                                    <button
-                                      onClick={() => removeShift(shift.id)}
-                                      className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 rounded-full p-0.5 hover:bg-background"
-                                    >
-                                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x">
-                                        <path d="M18 6 6 18" />
-                                        <path d="m6 6 12 12" />
-                                      </svg>
-                                    </button>
-                                  </motion.div>
-                                ))
-                              ) : (
-                                <Dialog>
-                                  <DialogTrigger asChild>
-                                    <button className="w-full h-full min-h-[60px] flex items-center justify-center opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity">
-                                      <Plus size={16} className="text-muted-foreground" />
-                                    </button>
-                                  </DialogTrigger>
-                                  <DialogContent>
-                                    <DialogHeader>
-                                      <DialogTitle>Add Shift</DialogTitle>
-                                      <DialogDescription>
-                                        Add a shift for {employee.name} on {format(day, 'EEEE, MMMM d')}
-                                      </DialogDescription>
-                                    </DialogHeader>
-                                    <div className="py-4">
-                                      <Button 
-                                        onClick={() => handleAddShift(day, employee.id)}
-                                        className="w-full"
-                                        disabled={!employeeAvailable}
-                                      >
-                                        {employeeAvailable 
-                                          ? 'Add Default Shift (9AM - 5PM)' 
-                                          : 'Employee not available on this day'}
-                                      </Button>
-                                    </div>
-                                  </DialogContent>
-                                </Dialog>
-                              )}
-                            </>
-                          )}
-                        </div>
-                      );
-                    })}
+                    <div className="font-medium">{format(day, 'EEE')}</div>
+                    <div className="text-xs text-muted-foreground">{format(day, 'MMM d')}</div>
                   </div>
                 ))}
               </div>
+              
+              {/* Employee rows */}
+              {employees.map((employee) => (
+                <div
+                  key={employee.id}
+                  className="grid grid-cols-[200px_repeat(7,1fr)] border-b border-border hover:bg-accent/5"
+                >
+                  <div className="px-4 py-4 flex items-center gap-3">
+                    <Avatar>
+                      <AvatarImage src={employee.avatarUrl} />
+                      <AvatarFallback className={employee.color}>
+                        {employee.initials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="font-medium truncate">{employee.name}</span>
+                  </div>
+                  
+                  {weekDays.map((day) => {
+                    const dayShifts = getShiftsForDayAndEmployee(day, employee.id);
+                    const employeeAvailable = isEmployeeAvailable(employee.id, day);
+                    
+                    return (
+                      <div
+                        key={format(day, 'yyyy-MM-dd')}
+                        className={`p-2 border-l border-border relative ${
+                          availabilityView && !employeeAvailable ? 'bg-red-50/30' : 
+                          availabilityView && employeeAvailable ? 'bg-green-50/30' : ''
+                        }`}
+                      >
+                        {availabilityView && (
+                          <div className="absolute inset-0 flex items-center justify-center text-xs font-medium">
+                            {employeeAvailable ? (
+                              <span className="text-green-600">Available</span>
+                            ) : (
+                              <span className="text-red-500">Unavailable</span>
+                            )}
+                          </div>
+                        )}
+                        
+                        {!availabilityView && (
+                          <>
+                            {dayShifts.length > 0 ? (
+                              dayShifts.map((shift) => (
+                                <motion.div
+                                  key={shift.id}
+                                  initial={{ scale: 0.95, opacity: 0 }}
+                                  animate={{ scale: 1, opacity: 1 }}
+                                  className="bg-primary/10 border border-primary/20 rounded-lg p-2 text-xs mb-1 relative group"
+                                >
+                                  <div className="flex items-center gap-1 mb-1">
+                                    <Clock size={12} className="text-primary" />
+                                    <span>
+                                      {shift.startTime} - {shift.endTime}
+                                    </span>
+                                  </div>
+                                  
+                                  <button
+                                    onClick={() => removeShift(shift.id)}
+                                    className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 rounded-full p-0.5 hover:bg-background"
+                                  >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x">
+                                      <path d="M18 6 6 18" />
+                                      <path d="m6 6 12 12" />
+                                    </svg>
+                                  </button>
+                                </motion.div>
+                              ))
+                            ) : (
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <button className="w-full h-full min-h-[60px] flex items-center justify-center opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity">
+                                    <Plus size={16} className="text-muted-foreground" />
+                                  </button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>Add Shift</DialogTitle>
+                                    <DialogDescription>
+                                      Add a shift for {employee.name} on {format(day, 'EEEE, MMMM d')}
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                  <div className="py-4">
+                                    <Button 
+                                      onClick={() => handleAddShift(day, employee.id)}
+                                      className="w-full"
+                                      disabled={!employeeAvailable}
+                                    >
+                                      {employeeAvailable 
+                                        ? 'Add Default Shift (9AM - 5PM)' 
+                                        : 'Employee not available on this day'}
+                                    </Button>
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
             </div>
-          )}
+          </div>
         </CardContent>
       </Card>
       

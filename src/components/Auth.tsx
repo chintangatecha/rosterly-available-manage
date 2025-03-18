@@ -21,9 +21,6 @@ const Auth: React.FC = () => {
     try {
       setLoading(true);
       
-      // Clear any existing sessions first to prevent conflicts
-      await supabase.auth.signOut();
-      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -41,8 +38,6 @@ const Auth: React.FC = () => {
         
         if (profileError) throw profileError;
         
-        console.log("Login successful, user role:", profileData.role);
-        
         // Redirect based on role
         if (profileData.role === 'manager') {
           navigate('/manager');
@@ -53,8 +48,8 @@ const Auth: React.FC = () => {
         }
       }
     } catch (error: any) {
-      console.error('Error logging in:', error);
       toast.error(error.message || 'An error occurred during login');
+      console.error('Error logging in:', error);
     } finally {
       setLoading(false);
     }
