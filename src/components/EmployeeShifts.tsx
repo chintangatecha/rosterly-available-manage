@@ -18,16 +18,20 @@ interface Shift {
 }
 
 const EmployeeShifts = () => {
-  const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
+  // Initialize with Monday as the start of the week
+  const [currentWeekStart, setCurrentWeekStart] = useState(() => 
+    startOfWeek(new Date(), { weekStartsOn: 1 })
+  );
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   
+  // Create an array of the 7 days of the week starting from currentWeekStart
   const weekDays = Array.from({ length: 7 }).map((_, i) => addDays(currentWeekStart, i));
 
   useEffect(() => {
     fetchShifts();
-  }, [currentWeekStart]);
+  }, [currentWeekStart, user]);
 
   const fetchShifts = async () => {
     if (!user) return;
@@ -64,11 +68,11 @@ const EmployeeShifts = () => {
   };
 
   const previousWeek = () => {
-    setCurrentWeekStart(subWeeks(currentWeekStart, 1));
+    setCurrentWeekStart(prevWeekStart => subWeeks(prevWeekStart, 1));
   };
 
   const nextWeek = () => {
-    setCurrentWeekStart(addWeeks(currentWeekStart, 1));
+    setCurrentWeekStart(prevWeekStart => addWeeks(prevWeekStart, 1));
   };
 
   const getShiftsForDay = (day: Date) => {
@@ -93,13 +97,15 @@ const EmployeeShifts = () => {
             <CardTitle>Weekly Schedule</CardTitle>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" onClick={previousWeek}>
-                <ChevronLeft size={16} />
+                <ChevronLeft size={16} className="mr-1" />
+                Previous Week
               </Button>
               <span className="text-sm font-medium">
                 {format(currentWeekStart, 'MMM d')} - {format(addDays(currentWeekStart, 6), 'MMM d, yyyy')}
               </span>
               <Button variant="outline" size="sm" onClick={nextWeek}>
-                <ChevronRight size={16} />
+                Next Week
+                <ChevronRight size={16} className="ml-1" />
               </Button>
             </div>
           </div>
