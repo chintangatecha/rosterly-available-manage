@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, HTMLMotionProps } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
-interface CustomButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface CustomButtonProps {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
   children: React.ReactNode;
@@ -12,7 +12,10 @@ interface CustomButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement
   isLoading?: boolean;
 }
 
-const CustomButton = React.forwardRef<HTMLButtonElement, CustomButtonProps>(
+// Create a type that combines the custom props with the motion button props
+type CombinedButtonProps = CustomButtonProps & Omit<HTMLMotionProps<"button">, keyof CustomButtonProps>;
+
+const CustomButton = React.forwardRef<HTMLButtonElement, CombinedButtonProps>(
   ({ variant = 'primary', size = 'md', children, className, icon, isLoading, ...props }, ref) => {
     const baseStyles = "relative inline-flex items-center justify-center rounded-xl font-medium transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background focus:ring-primary disabled:opacity-50 disabled:pointer-events-none";
     
@@ -29,15 +32,17 @@ const CustomButton = React.forwardRef<HTMLButtonElement, CustomButtonProps>(
       lg: "text-lg py-3 px-6"
     };
     
+    const buttonAnimation = {
+      tap: { scale: 0.98 },
+      hover: { y: -2, transition: { duration: 0.2 } }
+    };
+
     return (
       <motion.button
         ref={ref}
         className={cn(baseStyles, variantStyles[variant], sizeStyles[size], className)}
-        whileTap={{ scale: 0.98 }}
-        whileHover={{ 
-          y: -2,
-          transition: { duration: 0.2 }
-        }}
+        whileTap={buttonAnimation.tap}
+        whileHover={buttonAnimation.hover}
         {...props}
       >
         {isLoading ? (
