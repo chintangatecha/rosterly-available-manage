@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, Check, ChevronDown, ChevronUp, LogOut } from 'lucide-react';
-import { format } from 'date-fns';
+import { Calendar, Clock, Check, ChevronDown, ChevronUp, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
+import { format, addWeeks, subWeeks } from 'date-fns';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -41,7 +40,7 @@ const timeSlots = Array.from({ length: 24 }).map((_, i) => {
 });
 
 const EmployeeAvailability: React.FC = () => {
-  const [selectedWeek, setSelectedWeek] = useState(format(new Date(), 'PP'));
+  const [selectedWeekStart, setSelectedWeekStart] = useState(new Date());
   const [availability, setAvailability] = useState<TimeSlot[]>([]);
   const [expandedDay, setExpandedDay] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -61,11 +60,10 @@ const EmployeeAvailability: React.FC = () => {
         
         if (error) throw error;
         
-        // Transform data to match our component's format
         const transformedData: TimeSlot[] = (data || []).map((item: AvailabilityData) => ({
           id: item.id,
           day: item.day_of_week,
-          startTime: item.start_time.slice(0, 5), // Convert "09:00:00" to "09:00"
+          startTime: item.start_time.slice(0, 5),
           endTime: item.end_time.slice(0, 5),
         }));
         
@@ -80,6 +78,22 @@ const EmployeeAvailability: React.FC = () => {
     
     fetchAvailability();
   }, [user]);
+  
+  const previousWeek = () => {
+    setSelectedWeekStart(prevWeek => {
+      const newWeekStart = subWeeks(prevWeek, 1);
+      console.log('Moving to previous week:', format(newWeekStart, 'yyyy-MM-dd'));
+      return newWeekStart;
+    });
+  };
+
+  const nextWeek = () => {
+    setSelectedWeekStart(prevWeek => {
+      const newWeekStart = addWeeks(prevWeek, 1);
+      console.log('Moving to next week:', format(newWeekStart, 'yyyy-MM-dd'));
+      return newWeekStart;
+    });
+  };
   
   const handleAddTimeSlot = async (day: string) => {
     if (!user) return;
@@ -100,7 +114,6 @@ const EmployeeAvailability: React.FC = () => {
       
       if (error) throw error;
       
-      // Add to local state
       setAvailability([...availability, {
         id: data.id,
         day: data.day_of_week,
@@ -116,14 +129,12 @@ const EmployeeAvailability: React.FC = () => {
   };
   
   const handleTimeChange = async (id: string, field: 'startTime' | 'endTime', value: string) => {
-    // Update local state first for immediate feedback
     setAvailability(
       availability.map((slot) =>
         slot.id === id ? { ...slot, [field]: value } : slot
       )
     );
     
-    // Map from component field names to database field names
     const dbField = field === 'startTime' ? 'start_time' : 'end_time';
     
     try {
@@ -148,7 +159,6 @@ const EmployeeAvailability: React.FC = () => {
       
       if (error) throw error;
       
-      // Update local state
       setAvailability(availability.filter((slot) => slot.id !== id));
       toast.success('Availability removed successfully');
     } catch (error: any) {
@@ -199,13 +209,19 @@ const EmployeeAvailability: React.FC = () => {
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <span>Week Selection</span>
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <Calendar size={16} />
-                    Change Week
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={previousWeek}>
+                      <ChevronLeft size={16} className="mr-1" />
+                      Previous Week
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={nextWeek}>
+                      Next Week
+                      <ChevronRight size={16} className="ml-1" />
+                    </Button>
+                  </div>
                 </CardTitle>
                 <CardDescription>
-                  Currently viewing week starting {selectedWeek}
+                  Currently viewing week starting {format(selectedWeekStart, 'PP')}
                 </CardDescription>
               </CardHeader>
             </Card>
