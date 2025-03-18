@@ -103,6 +103,9 @@ const EmployeeManager: React.FC = () => {
 
   const saveEmployee = async (id: string) => {
     try {
+      // Show loading toast
+      const loadingToast = toast.loading('Saving changes...');
+      
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -111,16 +114,28 @@ const EmployeeManager: React.FC = () => {
         })
         .eq('id', id);
       
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
       if (error) throw error;
       
-      // Update the local state
+      // Get updated data from Supabase to ensure we're in sync
+      const { data: updatedProfile, error: fetchError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', id)
+        .single();
+        
+      if (fetchError) throw fetchError;
+      
+      // Update the local state with data from the server
       setEmployees(employees.map(emp => 
         emp.id === id 
           ? { 
               ...emp, 
-              first_name: editForm.firstName || null, 
-              last_name: editForm.lastName || null,
-              initials: [editForm.firstName, editForm.lastName]
+              first_name: updatedProfile.first_name, 
+              last_name: updatedProfile.last_name,
+              initials: [updatedProfile.first_name, updatedProfile.last_name]
                 .filter(Boolean)
                 .map(n => n[0])
                 .join('')
