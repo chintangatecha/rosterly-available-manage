@@ -1,7 +1,9 @@
 
 import React, { ReactNode } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import CustomButton from './ui/CustomButton';
 
 interface LayoutProps {
   children: ReactNode;
@@ -9,6 +11,8 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -38,8 +42,24 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <NavLink to="/manager" currentPath={location.pathname}>Manager</NavLink>
           </nav>
           
-          <div className="md:hidden">
-            {/* Mobile menu button could go here if needed */}
+          <div className="flex gap-2 items-center">
+            {user ? (
+              <CustomButton
+                variant="outline"
+                size="sm"
+                onClick={() => signOut()}
+              >
+                Sign out
+              </CustomButton>
+            ) : (
+              <CustomButton
+                variant="primary"
+                size="sm"
+                onClick={() => navigate('/#login')}
+              >
+                Login
+              </CustomButton>
+            )}
           </div>
         </div>
       </header>

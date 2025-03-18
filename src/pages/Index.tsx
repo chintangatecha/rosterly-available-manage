@@ -25,7 +25,7 @@ const Index = () => {
     <Layout>
       <div className="container mx-auto px-4 py-8">
         <Hero />
-        <div className="mt-12">
+        <div id="login" className="mt-12 pt-8 scroll-mt-20">
           <Auth />
         </div>
       </div>
