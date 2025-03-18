@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Employee from "./pages/Employee";
 import Manager from "./pages/Manager";
 import NotFound from "./pages/NotFound";
+import AuthLayout from "./components/AuthLayout";
 
 const queryClient = new QueryClient();
 
@@ -21,8 +22,16 @@ const App = () => (
         <AnimatePresence mode="wait">
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/employee" element={<Employee />} />
-            <Route path="/manager" element={<Manager />} />
+            
+            {/* Protected routes */}
+            <Route element={<AuthLayout requiredRole="manager" />}>
+              <Route path="/manager" element={<Manager />} />
+            </Route>
+            
+            <Route element={<AuthLayout requiredRole="employee" />}>
+              <Route path="/employee" element={<Employee />} />
+            </Route>
+            
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AnimatePresence>
