@@ -55,18 +55,36 @@ export const useEmployees = () => {
   const updateEmployee = async (updatedEmployee: Employee) => {
     console.log('Updating employee in hook:', updatedEmployee);
     
-    // Update the UI immediately
-    setEmployees(prevEmployees => 
-      prevEmployees.map(emp => 
-        emp.id === updatedEmployee.id ? updatedEmployee : emp
-      )
-    );
-    
-    // Verify that the update happened in the UI
-    setTimeout(() => {
-      const updatedEmployeeList = employees.find(emp => emp.id === updatedEmployee.id);
-      console.log('Employee after update in state:', updatedEmployeeList);
-    }, 100);
+    try {
+      // Update the employee in Supabase
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          first_name: updatedEmployee.first_name,
+          last_name: updatedEmployee.last_name,
+          email: updatedEmployee.email,
+          // Don't update role as it shouldn't change
+        })
+        .eq('id', updatedEmployee.id);
+        
+      if (error) throw error;
+      
+      // Update the UI immediately
+      setEmployees(prevEmployees => 
+        prevEmployees.map(emp => 
+          emp.id === updatedEmployee.id ? updatedEmployee : emp
+        )
+      );
+      
+      toast.success('Employee updated successfully');
+      
+      // Refresh the employee list to ensure we have the latest data
+      await fetchEmployees();
+      
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update employee');
+      console.error('Error updating employee:', error);
+    }
   };
 
   return {

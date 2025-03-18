@@ -1,7 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, Check, ChevronDown, ChevronUp, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
-import { format, addWeeks, subWeeks } from 'date-fns';
+import { format, addWeeks, subWeeks, startOfWeek, addDays, parseISO, isEqual } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,7 +22,8 @@ import { useNavigate } from 'react-router-dom';
 
 interface TimeSlot {
   id: string;
-  day: string;
+  date: Date;
+  dayName: string;
   startTime: string;
   endTime: string;
 }
@@ -28,24 +31,32 @@ interface TimeSlot {
 interface AvailabilityData {
   id: string;
   user_id: string;
-  day_of_week: string;
+  date: string;
   start_time: string;
   end_time: string;
 }
 
-const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const timeSlots = Array.from({ length: 24 }).map((_, i) => {
   const hour = i.toString().padStart(2, '0');
   return `${hour}:00`;
 });
 
 const EmployeeAvailability: React.FC = () => {
-  const [selectedWeekStart, setSelectedWeekStart] = useState(new Date());
+  const [selectedWeekStart, setSelectedWeekStart] = useState<Date>(() => {
+    const now = new Date();
+    return startOfWeek(now, { weekStartsOn: 1 }); // Start week on Monday
+  });
   const [availability, setAvailability] = useState<TimeSlot[]>([]);
   const [expandedDay, setExpandedDay] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
+  
+  // Generate the days for the current selected week
+  const weekDays = Array.from({ length: 7 }).map((_, i) => 
+    addDays(selectedWeekStart, i)
+  );
   
   useEffect(() => {
     const fetchAvailability = async () => {
@@ -53,19 +64,32 @@ const EmployeeAvailability: React.FC = () => {
       
       try {
         setLoading(true);
+        
+        // Format dates for the current week's range
+        const startDate = format(selectedWeekStart, 'yyyy-MM-dd');
+        const endDate = format(addDays(selectedWeekStart, 6), 'yyyy-MM-dd');
+        
+        console.log(`Fetching availability from ${startDate} to ${endDate}`);
+        
         const { data, error } = await supabase
           .from('availability')
           .select('*')
-          .eq('user_id', user.id);
+          .eq('user_id', user.id)
+          .gte('date', startDate)
+          .lte('date', endDate);
         
         if (error) throw error;
         
-        const transformedData: TimeSlot[] = (data || []).map((item: AvailabilityData) => ({
-          id: item.id,
-          day: item.day_of_week,
-          startTime: item.start_time.slice(0, 5),
-          endTime: item.end_time.slice(0, 5),
-        }));
+        const transformedData: TimeSlot[] = (data || []).map((item: AvailabilityData) => {
+          const date = parseISO(item.date);
+          return {
+            id: item.id,
+            date,
+            dayName: format(date, 'EEEE'), // e.g., 'Monday'
+            startTime: item.start_time.slice(0, 5),
+            endTime: item.end_time.slice(0, 5),
+          };
+        });
         
         setAvailability(transformedData);
       } catch (error: any) {
@@ -77,7 +101,7 @@ const EmployeeAvailability: React.FC = () => {
     };
     
     fetchAvailability();
-  }, [user]);
+  }, [user, selectedWeekStart]);
   
   const previousWeek = () => {
     setSelectedWeekStart(prevWeek => {
@@ -95,12 +119,15 @@ const EmployeeAvailability: React.FC = () => {
     });
   };
   
-  const handleAddTimeSlot = async (day: string) => {
+  const handleAddTimeSlot = async (dayDate: Date) => {
     if (!user) return;
+    
+    // Format the date as ISO string for the database
+    const formattedDate = format(dayDate, 'yyyy-MM-dd');
     
     const newSlot = {
       user_id: user.id,
-      day_of_week: day,
+      date: formattedDate,
       start_time: '09:00',
       end_time: '17:00',
     };
@@ -116,7 +143,8 @@ const EmployeeAvailability: React.FC = () => {
       
       setAvailability([...availability, {
         id: data.id,
-        day: data.day_of_week,
+        date: parseISO(data.date),
+        dayName: format(parseISO(data.date), 'EEEE'),
         startTime: data.start_time.slice(0, 5),
         endTime: data.end_time.slice(0, 5),
       }]);
@@ -172,8 +200,18 @@ const EmployeeAvailability: React.FC = () => {
     navigate('/');
   };
   
-  const toggleDay = (day: string) => {
-    setExpandedDay(expandedDay === day ? null : day);
+  const toggleDay = (dayName: string) => {
+    setExpandedDay(expandedDay === dayName ? null : dayName);
+  };
+  
+  // Get slots for a specific day
+  const getDaySlots = (dayDate: Date) => {
+    return availability.filter((slot) => 
+      isEqual(
+        new Date(slot.date.getFullYear(), slot.date.getMonth(), slot.date.getDate()),
+        new Date(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate())
+      )
+    );
   };
   
   return (
@@ -227,18 +265,23 @@ const EmployeeAvailability: React.FC = () => {
             </Card>
             
             <AnimatedList className="space-y-4" staggerDelay={0.05}>
-              {days.map((day) => {
-                const isExpanded = expandedDay === day;
-                const daySlots = availability.filter((slot) => slot.day === day);
+              {weekDays.map((dayDate) => {
+                const dayName = format(dayDate, 'EEEE'); // e.g., 'Monday'
+                const formattedDate = format(dayDate, 'MMM d, yyyy'); // e.g., 'Jan 1, 2023'
+                const isExpanded = expandedDay === dayName;
+                const daySlots = getDaySlots(dayDate);
                 
                 return (
-                  <Card key={day} className="overflow-hidden">
+                  <Card key={dayDate.toString()} className="overflow-hidden">
                     <button
-                      onClick={() => toggleDay(day)}
+                      onClick={() => toggleDay(dayName)}
                       className="w-full text-left px-6 py-4 flex items-center justify-between hover:bg-accent/5 transition-colors"
                     >
                       <div className="flex items-center">
-                        <span className="font-medium">{day}</span>
+                        <span className="font-medium">{dayName}</span>
+                        <span className="ml-2 text-xs text-muted-foreground">
+                          {formattedDate}
+                        </span>
                         {daySlots.length > 0 && (
                           <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
                             {daySlots.length} {daySlots.length === 1 ? 'slot' : 'slots'}
@@ -258,12 +301,12 @@ const EmployeeAvailability: React.FC = () => {
                         <CardContent className="pb-4">
                           {daySlots.length === 0 ? (
                             <div className="text-center py-6 text-muted-foreground">
-                              <p>No availability added for {day}</p>
+                              <p>No availability added for {dayName}</p>
                               <Button
                                 variant="outline"
                                 size="sm"
                                 className="mt-2"
-                                onClick={() => handleAddTimeSlot(day)}
+                                onClick={() => handleAddTimeSlot(dayDate)}
                               >
                                 Add Availability
                               </Button>
@@ -340,7 +383,7 @@ const EmployeeAvailability: React.FC = () => {
                                 variant="outline"
                                 size="sm"
                                 className="w-full mt-3"
-                                onClick={() => handleAddTimeSlot(day)}
+                                onClick={() => handleAddTimeSlot(dayDate)}
                               >
                                 Add Another Time Slot
                               </Button>
