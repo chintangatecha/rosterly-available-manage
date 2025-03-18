@@ -1,15 +1,25 @@
 
-import React from 'react';
-import { Users } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { Users, RefreshCw } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import AnimatedTransition from './AnimatedTransition';
 import EmployeesList from './employees/EmployeesList';
 import { useEmployees } from '@/hooks/useEmployees';
 
 const EmployeeManager: React.FC = () => {
-  const { employees, loading, updateEmployee } = useEmployees();
+  const { employees, loading, updateEmployee, fetchEmployees } = useEmployees();
 
   console.log('EmployeeManager rendering with employees:', employees);
+
+  useEffect(() => {
+    // Fetch employees when component mounts
+    fetchEmployees();
+  }, [fetchEmployees]);
+
+  const handleRefresh = () => {
+    fetchEmployees();
+  };
 
   if (loading) {
     return (
@@ -29,14 +39,25 @@ const EmployeeManager: React.FC = () => {
   return (
     <AnimatedTransition>
       <Card className="mb-8">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            <span>Employee Management</span>
-          </CardTitle>
-          <CardDescription>
-            View and edit employee information
-          </CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              <span>Employee Management</span>
+            </CardTitle>
+            <CardDescription>
+              View and edit employee information
+            </CardDescription>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleRefresh}
+            className="flex items-center gap-1"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Refresh
+          </Button>
         </CardHeader>
         <CardContent>
           <EmployeesList 

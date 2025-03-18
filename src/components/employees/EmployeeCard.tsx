@@ -8,7 +8,6 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Employee } from './types';
 import EmployeeAvatar from './EmployeeAvatar';
-import { supabase } from '@/integrations/supabase/client';
 
 interface EmployeeCardProps {
   employee: Employee;
@@ -43,20 +42,6 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, onEmployeeUpdate 
         last_name: editForm.lastName || null
       });
       
-      // Update the profile in Supabase
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          first_name: editForm.firstName || null,
-          last_name: editForm.lastName || null,
-        })
-        .eq('id', employee.id);
-      
-      // Dismiss loading toast
-      toast.dismiss(loadingToast);
-      
-      if (error) throw error;
-      
       // Calculate new initials based on updated data
       const firstNameInitial = editForm.firstName ? editForm.firstName[0] : '';
       const lastNameInitial = editForm.lastName ? editForm.lastName[0] : '';
@@ -76,6 +61,9 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, onEmployeeUpdate 
       // Update the parent component's state
       onEmployeeUpdate(updatedEmployee);
       setIsEditing(false);
+      
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
       toast.success('Employee updated successfully');
     } catch (error: any) {
       toast.error(error.message || 'Failed to update employee');
