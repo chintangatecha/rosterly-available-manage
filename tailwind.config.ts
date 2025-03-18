@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -70,25 +71,56 @@ export default {
 			},
 			keyframes: {
 				'accordion-down': {
-					from: {
-						height: '0'
-					},
-					to: {
-						height: 'var(--radix-accordion-content-height)'
-					}
+					from: { height: '0' },
+					to: { height: 'var(--radix-accordion-content-height)' }
 				},
 				'accordion-up': {
-					from: {
-						height: 'var(--radix-accordion-content-height)'
-					},
-					to: {
-						height: '0'
-					}
+					from: { height: 'var(--radix-accordion-content-height)' },
+					to: { height: '0' }
+				},
+				'fade-in': {
+					from: { opacity: '0' },
+					to: { opacity: '1' }
+				},
+				'fade-out': {
+					from: { opacity: '1' },
+					to: { opacity: '0' }
+				},
+				'slide-up': {
+					from: { transform: 'translateY(10px)', opacity: '0' },
+					to: { transform: 'translateY(0)', opacity: '1' }
+				},
+				'slide-down': {
+					from: { transform: 'translateY(-10px)', opacity: '0' },
+					to: { transform: 'translateY(0)', opacity: '1' }
+				},
+				'blur-in': {
+					from: { filter: 'blur(5px)', opacity: '0' },
+					to: { filter: 'blur(0)', opacity: '1' }
+				},
+				'pulse-subtle': {
+					'0%, 100%': { opacity: '1' },
+					'50%': { opacity: '0.8' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-in': 'fade-in 0.3s ease-out',
+				'fade-out': 'fade-out 0.3s ease-out',
+				'slide-up': 'slide-up 0.4s ease-out',
+				'slide-down': 'slide-down 0.4s ease-out',
+				'blur-in': 'blur-in 0.4s ease-out',
+				'pulse-subtle': 'pulse-subtle 2s ease-in-out infinite'
+			},
+			boxShadow: {
+				'subtle': '0 2px 10px rgba(0, 0, 0, 0.05)',
+				'elevated': '0 10px 30px rgba(0, 0, 0, 0.08)',
+				'glass': '0 4px 16px rgba(17, 17, 26, 0.05), 0 8px 32px rgba(17, 17, 26, 0.05)'
+			},
+			transitionTimingFunction: {
+				'spring': 'cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+				'bounce': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)'
 			}
 		}
 	},
