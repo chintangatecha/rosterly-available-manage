@@ -55,7 +55,19 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <CustomButton
                 variant="primary"
                 size="sm"
-                onClick={() => navigate('/#login')}
+                onClick={() => {
+                  // First navigate to home page if not already there
+                  if (location.pathname !== '/') {
+                    navigate('/');
+                    // Need to wait for navigation to complete before scrolling
+                    setTimeout(() => {
+                      document.getElementById('login')?.scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+                  } else {
+                    // Already on home page, just scroll to login section
+                    document.getElementById('login')?.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
               >
                 Login
               </CustomButton>
