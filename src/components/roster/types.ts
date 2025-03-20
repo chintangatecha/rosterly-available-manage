@@ -68,8 +68,6 @@ export interface RosterHeaderProps {
   currentWeekStart: Date;
   previousWeek: () => void;
   nextWeek: () => void;
-  availabilityView: boolean;
-  setAvailabilityView: Dispatch<SetStateAction<boolean>>;
 }
 
 export interface ShiftCellProps {

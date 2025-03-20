@@ -18,9 +18,7 @@ interface RosterTableProps {
   weekDays: Date[];
   employees: Employee[];
   shifts: Shift[];
-  availabilityView: boolean;
   getShiftsForDayAndEmployee: (day: Date, employeeId: string) => Shift[];
-  isEmployeeAvailable: (employeeId: string, day: Date) => boolean;
   openAddShiftDialog: (day: Date, employee: Employee) => void;
   removeShift: (id: string) => void;
 }
@@ -29,9 +27,7 @@ const RosterTable: React.FC<RosterTableProps> = ({
   weekDays,
   employees,
   shifts,
-  availabilityView,
   getShiftsForDayAndEmployee,
-  isEmployeeAvailable,
   openAddShiftDialog,
   removeShift
 }) => {
@@ -45,9 +41,7 @@ const RosterTable: React.FC<RosterTableProps> = ({
             key={employee.id}
             employee={employee}
             weekDays={weekDays}
-            availabilityView={availabilityView}
             getShiftsForDayAndEmployee={getShiftsForDayAndEmployee}
-            isEmployeeAvailable={isEmployeeAvailable}
             openAddShiftDialog={openAddShiftDialog}
             removeShift={removeShift}
           />
@@ -93,7 +87,6 @@ const RosterTable: React.FC<RosterTableProps> = ({
             
             {weekDays.map((day) => {
               const dayShifts = getShiftsForDayAndEmployee(day, employee.id);
-              const employeeAvailable = isEmployeeAvailable(employee.id, day);
               
               return (
                 <ShiftCell
@@ -101,8 +94,6 @@ const RosterTable: React.FC<RosterTableProps> = ({
                   day={day}
                   employee={employee}
                   shifts={dayShifts}
-                  availabilityView={availabilityView}
-                  isAvailable={employeeAvailable}
                   openAddShiftDialog={openAddShiftDialog}
                   removeShift={removeShift}
                 />
@@ -119,17 +110,13 @@ const RosterTable: React.FC<RosterTableProps> = ({
 const MobileEmployeeRow: React.FC<{
   employee: Employee;
   weekDays: Date[];
-  availabilityView: boolean;
   getShiftsForDayAndEmployee: (day: Date, employeeId: string) => Shift[];
-  isEmployeeAvailable: (employeeId: string, day: Date) => boolean;
   openAddShiftDialog: (day: Date, employee: Employee) => void;
   removeShift: (id: string) => void;
 }> = ({
   employee,
   weekDays,
-  availabilityView,
   getShiftsForDayAndEmployee,
-  isEmployeeAvailable,
   openAddShiftDialog,
   removeShift
 }) => {
@@ -148,22 +135,16 @@ const MobileEmployeeRow: React.FC<{
       <div className="grid grid-cols-7 gap-1 p-2">
         {weekDays.map((day) => {
           const dayShifts = getShiftsForDayAndEmployee(day, employee.id);
-          const employeeAvailable = isEmployeeAvailable(employee.id, day);
-          const dateStr = format(day, 'EEE d');
           
           return (
             <Drawer key={format(day, 'yyyy-MM-dd')}>
               <DrawerTrigger asChild>
                 <div
-                  className={`p-2 text-center rounded-md cursor-pointer ${
-                    availabilityView && !employeeAvailable ? 'bg-red-50/30 text-red-500' : 
-                    availabilityView && employeeAvailable ? 'bg-green-50/30 text-green-600' : 
-                    dayShifts.length > 0 ? 'bg-primary/10 text-primary' : 'bg-secondary'
-                  }`}
+                  className={`p-2 text-center rounded-md cursor-pointer ${dayShifts.length > 0 ? 'bg-primary/10 text-primary' : 'bg-secondary'}`}
                 >
                   <div className="text-xs font-medium">{format(day, 'EEE')}</div>
                   <div className="text-xs">{format(day, 'd')}</div>
-                  {!availabilityView && dayShifts.length > 0 && (
+                  {dayShifts.length > 0 && (
                     <div className="text-xs mt-1 font-medium">{dayShifts.length}</div>
                   )}
                 </div>
@@ -182,38 +163,26 @@ const MobileEmployeeRow: React.FC<{
                   </div>
                   
                   <div className="space-y-3">
-                    {availabilityView ? (
-                      <div className="text-center p-4">
-                        {employeeAvailable ? (
-                          <div className="text-green-600 font-medium">Available</div>
-                        ) : (
-                          <div className="text-red-500 font-medium">Unavailable</div>
-                        )}
-                      </div>
-                    ) : (
-                      <>
-                        {dayShifts.map((shift) => (
-                          <div key={shift.id} className="p-3 bg-secondary rounded-md relative">
-                            <div className="font-medium">{shift.startTime} - {shift.endTime}</div>
-                            <button 
-                              onClick={() => removeShift(shift.id)}
-                              className="absolute top-2 right-2 text-muted-foreground hover:text-destructive"
-                            >
-                              <X size={16} />
-                            </button>
-                          </div>
-                        ))}
-                        <Button 
-                          variant="outline" 
-                          className="w-full"
-                          onClick={() => {
-                            openAddShiftDialog(day, employee);
-                          }}
+                    {dayShifts.map((shift) => (
+                      <div key={shift.id} className="p-3 bg-secondary rounded-md relative">
+                        <div className="font-medium">{shift.startTime} - {shift.endTime}</div>
+                        <button 
+                          onClick={() => removeShift(shift.id)}
+                          className="absolute top-2 right-2 text-muted-foreground hover:text-destructive"
                         >
-                          Add Shift
-                        </Button>
-                      </>
-                    )}
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ))}
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => {
+                        openAddShiftDialog(day, employee);
+                      }}
+                    >
+                      Add Shift
+                    </Button>
                   </div>
                 </div>
               </DrawerContent>
@@ -223,6 +192,7 @@ const MobileEmployeeRow: React.FC<{
       </div>
     </div>
   );
+};
 };
 
 export default RosterTable;
