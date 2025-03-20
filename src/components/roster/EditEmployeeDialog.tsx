@@ -83,23 +83,46 @@ const EditEmployeeDialog: React.FC<EditEmployeeDialogProps> = ({
       
       const finalJobRole = jobRole === 'Other' ? customRole : jobRole;
       
+      // Log the update attempt for debugging
+      console.log('Attempting to update profile with ID:', employee.id);
+      console.log('Update data:', {
+        first_name: firstName,
+        last_name: lastName,
+        job_role: finalJobRole
+      });
+      
+      // Get the authenticated user for debugging
+      const { data: { user } } = await supabase.auth.getUser();
+      console.log('Current authenticated user:', user);
+      
       // Update the profile in Supabase
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
         .update({
           first_name: firstName,
           last_name: lastName,
           job_role: finalJobRole
         })
-        .eq('id', employee.id);
+        .eq('id', employee.id)
+        .select();
+      
+      console.log('Update response:', { data, error });
       
       if (error) throw error;
       
-      toast.success('Employee information updated successfully');
-      onEmployeeUpdated();
-      onClose();
+      // Only show success if we actually have returned data
+      if (data && data.length > 0) {
+        toast.success('Employee information updated successfully');
+        onEmployeeUpdated();
+        onClose();
+      } else {
+        // This indicates the update might have failed silently
+        toast.error('Update may have failed. No rows were affected.');
+        console.error('No rows were affected by the update');
+      }
     } catch (error: any) {
-      toast.error(error.message || 'Failed to update employee information');
+      console.error('Error updating employee:', error);
+      toast.error(`Failed to update: ${error.message || 'Unknown error'}`);
     } finally {
       setIsSubmitting(false);
     }
