@@ -72,6 +72,10 @@
     @apply border-border;
   }
   
+  html, body {
+    @apply overflow-x-hidden;
+  }
+  
   body {
     @apply bg-background text-foreground font-sans;
     -webkit-font-smoothing: antialiased;
@@ -80,7 +84,7 @@
   
   /* Custom scrollbar */
   ::-webkit-scrollbar {
-    width: 6px;
+    width: 4px;
   }
   
   ::-webkit-scrollbar-track {
@@ -144,5 +148,53 @@
       opacity: 1;
       transform: translateY(0);
     }
+  }
+  
+  /* Mobile-specific utilities */
+  .mobile-container {
+    @apply px-3 py-2;
+  }
+  
+  .mobile-card {
+    @apply rounded-lg p-3 shadow-sm;
+  }
+  
+  .mobile-section {
+    @apply my-2;
+  }
+  
+  /* Mobile drawer overrides */
+  @media (max-width: 768px) {
+    .drawer-content {
+      @apply p-3;
+    }
+    
+    .mobile-p-0 {
+      @apply p-0;
+    }
+    
+    .mobile-text-sm {
+      @apply text-sm;
+    }
+    
+    .mobile-text-xs {
+      @apply text-xs;
+    }
+  }
+}
+
+/* Mobile-specific global adjustments */
+@media (max-width: 768px) {
+  .container {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+  
+  h1 {
+    font-size: 1.5rem !important;
+  }
+  
+  h2 {
+    font-size: 1.25rem !important;
   }
 }

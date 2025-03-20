@@ -4,6 +4,7 @@ import { format, addDays } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Calendar } from 'lucide-react';
 import AvailabilityCalendar from './AvailabilityCalendar';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface WeekViewProps {
   currentWeekStart: Date;
@@ -16,6 +17,8 @@ const WeekView: React.FC<WeekViewProps> = ({
   onPreviousWeek,
   onNextWeek
 }) => {
+  const isMobile = useIsMobile();
+  
   return (
     <div className="space-y-4">
       <AvailabilityCalendar 
