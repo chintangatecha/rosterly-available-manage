@@ -11,19 +11,18 @@ import { useNavigate } from 'react-router-dom';
 
 // Import our new components
 import RosterHeader from './roster/RosterHeader';
-import RosterTable from './roster/RosterTable';
+import CombinedRosterTable from './roster/CombinedRosterTable';
 import AddShiftDialog from './roster/AddShiftDialog';
 import { useEmployeeData } from './roster/hooks/useEmployeeData';
 import { useShiftManagement } from './roster/hooks/useShiftManagement';
 
 const ManagerRoster: React.FC = () => {
   const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
-  const [availabilityView, setAvailabilityView] = useState(false);
   
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   
-  const { employees, employeeAvailability, loading } = useEmployeeData();
+  const { employees, employeeAvailability, loading, fetchEmployees } = useEmployeeData();
   const { 
     shifts, 
     fetchShifts,
@@ -45,6 +44,12 @@ const ManagerRoster: React.FC = () => {
   useEffect(() => {
     fetchShifts();
   }, []);
+  
+  // This function will be called when an employee is updated
+  const handleEmployeeUpdated = () => {
+    fetchEmployees();
+    toast.success('Employee information updated successfully');
+  };
   
   const previousWeek = () => {
     setCurrentWeekStart(subWeeks(currentWeekStart, 1));
@@ -105,21 +110,21 @@ const ManagerRoster: React.FC = () => {
             currentWeekStart={currentWeekStart}
             previousWeek={previousWeek}
             nextWeek={nextWeek}
-            availabilityView={availabilityView}
-            setAvailabilityView={setAvailabilityView}
           />
         </CardHeader>
         
         <CardContent className="px-2">
-          <RosterTable
+          <CombinedRosterTable
             weekDays={weekDays}
             employees={employees}
             shifts={shifts}
-            availabilityView={availabilityView}
+            employeeAvailability={employeeAvailability}
             getShiftsForDayAndEmployee={getShiftsForDayAndEmployee}
             isEmployeeAvailable={isEmployeeAvailable}
             openAddShiftDialog={openAddShiftDialog}
             removeShift={removeShift}
+            isManager={true}
+            onEmployeeUpdated={handleEmployeeUpdated}
           />
         </CardContent>
       </Card>

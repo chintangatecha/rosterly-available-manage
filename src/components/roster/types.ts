@@ -7,6 +7,7 @@ export interface Employee {
   initials: string;
   avatarUrl: string;
   color: string;
+  jobRole: string | null;
 }
 
 export interface Shift {
@@ -31,6 +32,7 @@ export interface ProfileRecord {
   role: string;
   first_name: string | null;
   last_name: string | null;
+  job_role: string | null;
 }
 
 export interface ShiftRecord {
@@ -74,8 +76,6 @@ export interface ShiftCellProps {
   day: Date;
   employee: Employee;
   shifts: Shift[];
-  availabilityView: boolean;
-  isAvailable: boolean;
   openAddShiftDialog: (day: Date, employee: Employee) => void;
   removeShift: (id: string) => void;
 }

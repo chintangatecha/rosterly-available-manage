@@ -193,6 +193,5 @@ const MobileEmployeeRow: React.FC<{
     </div>
   );
 };
-};
 
 export default RosterTable;
