@@ -48,6 +48,8 @@ export type Database = {
           last_name: string | null
           role: Database["public"]["Enums"]["user_role"]
           updated_at: string | null
+          job_role: string | null
+          section: string | null
         }
         Insert: {
           created_at?: string | null
@@ -57,6 +59,8 @@ export type Database = {
           last_name?: string | null
           role: Database["public"]["Enums"]["user_role"]
           updated_at?: string | null
+          job_role?: string | null
+          section?: string | null
         }
         Update: {
           created_at?: string | null
@@ -66,8 +70,141 @@ export type Database = {
           last_name?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string | null
+          job_role?: string | null
+          section?: string | null
         }
         Relationships: []
+      }
+      roster_shifts: {
+        Row: {
+          id: string
+          roster_version_id: string
+          user_id: string
+          date: string
+          start_time: string
+          end_time: string
+          created_at: string | null
+          created_by: string
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          roster_version_id: string
+          user_id: string
+          date: string
+          start_time: string
+          end_time: string
+          created_at?: string | null
+          created_by: string
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          roster_version_id?: string
+          user_id?: string
+          date?: string
+          start_time?: string
+          end_time?: string
+          created_at?: string | null
+          created_by?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roster_shifts_roster_version_id_fkey"
+            columns: ["roster_version_id"]
+            isOneToOne: false
+            referencedRelation: "roster_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roster_shifts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roster_shifts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roster_versions: {
+        Row: {
+          id: string
+          name: string
+          type: Database["public"]["Enums"]["roster_version_type"]
+          week_start: string
+          is_active: boolean
+          created_at: string | null
+          created_by: string
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          type: Database["public"]["Enums"]["roster_version_type"]
+          week_start: string
+          is_active: boolean
+          created_at?: string | null
+          created_by: string
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          type?: Database["public"]["Enums"]["roster_version_type"]
+          week_start?: string
+          is_active?: boolean
+          created_at?: string | null
+          created_by?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roster_versions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sections: {
+        Row: {
+          id: string
+          name: string
+          created_at: string | null
+          created_by: string
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          created_at?: string | null
+          created_by: string
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          created_at?: string | null
+          created_by?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sections_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       shifts: {
         Row: {
@@ -128,7 +265,8 @@ export type Database = {
       }
     }
     Enums: {
-      user_role: "manager" | "employee"
+      user_role: "manager" | "employee",
+      roster_version_type: "operational" | "finalized"
     }
     CompositeTypes: {
       [_ in never]: never
