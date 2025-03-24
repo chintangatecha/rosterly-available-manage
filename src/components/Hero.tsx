@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -24,21 +23,6 @@ const Hero: React.FC = () => {
           transition={{ duration: 0.6 }}
           className="text-center max-w-3xl"
         >
-          <motion.div 
-            className="inline-block mb-4 p-3 rounded-xl"
-            initial={{ scale: 0, rotate: -20 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-          >
-            <img 
-              src="/images/eroster-logo.svg" 
-              alt="eRoster Logo" 
-              width="180" 
-              height="180" 
-              className="object-contain"
-            />
-          </motion.div>
-          
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
             <span className="text-primary">e</span>Roster: Smart Scheduling Solution
           </h1>
