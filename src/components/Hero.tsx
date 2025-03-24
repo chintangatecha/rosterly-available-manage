@@ -25,16 +25,22 @@ const Hero: React.FC = () => {
           className="text-center max-w-3xl"
         >
           <motion.div 
-            className="inline-block mb-4 bg-primary/10 text-primary p-3 rounded-xl"
+            className="inline-block mb-4 p-3 rounded-xl"
             initial={{ scale: 0, rotate: -20 }}
             animate={{ scale: 1, rotate: 0 }}
             transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
           >
-            <Calendar size={32} />
+            <img 
+              src="/images/eroster-logo.svg" 
+              alt="eRoster Logo" 
+              width="180" 
+              height="180" 
+              className="object-contain"
+            />
           </motion.div>
           
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-            Effortless Roster Management
+            <span className="text-primary">e</span>Roster: Smart Scheduling Solution
           </h1>
           
           <p className="text-xl text-muted-foreground mb-8">
@@ -78,7 +84,7 @@ const Hero: React.FC = () => {
                   <div className="w-3 h-3 bg-yellow-500 rounded-full" />
                   <div className="w-3 h-3 bg-green-500 rounded-full" />
                 </div>
-                <div className="text-sm text-center flex-1">RosterSync Preview</div>
+                <div className="text-sm text-center flex-1">eRoster Preview</div>
               </div>
               <div className="h-[400px] grid grid-cols-7 gap-1 p-4 bg-card">
                 {Array.from({ length: 7 }).map((_, dayIndex) => (

@@ -202,11 +202,17 @@ const ManagerRoster: React.FC = () => {
   return (
     <AnimatedTransition className="max-w-6xl mx-auto px-4 py-8">
       <div className="mb-8 text-center">
-        <div className="inline-flex items-center justify-center mb-2 text-primary bg-primary/10 p-2 rounded-lg">
-          <Calendar size={24} />
+        <div className="inline-flex items-center justify-center mb-2 p-2 rounded-lg">
+          <img 
+            src="/images/eroster-icon.svg" 
+            alt="eRoster Logo" 
+            width="32" 
+            height="32" 
+            className="object-contain"
+          />
         </div>
-        <h1 className="text-3xl font-bold mb-2">Roster Management</h1>
-        <p className="text-muted-foreground">Create and manage your team's schedule</p>
+        <h1 className="text-3xl font-bold mb-2"><span className="text-primary">e</span>Roster Management</h1>
+        <p className="text-muted-foreground">Create and manage your team's schedule efficiently</p>
         
         <div className="mt-4 flex justify-between items-center">
           <div className="flex gap-2">

@@ -1,0 +1,39 @@
+<svg width="450" height="450" viewBox="0 0 450 450" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Blue semi-circle -->
+  <path d="M225 50 A175 175 0 1 0 225 400" stroke="#4285F4" stroke-width="20" fill="none" />
+  
+  <!-- Clock hands -->
+  <line x1="225" y1="225" x2="325" y2="225" stroke="#4285F4" stroke-width="8" />
+  <line x1="225" y1="225" x2="225" y2="150" stroke="#4285F4" stroke-width="8" />
+  
+  <!-- Clock center -->
+  <circle cx="225" cy="225" r="10" fill="#4285F4" />
+  
+  <!-- Icons -->
+  <text x="160" y="225" font-family="Arial" font-size="24" fill="#4285F4">€</text>
+  <text x="280" y="225" font-size="24" fill="#FF9900">$</text>
+  
+  <!-- Calendar icon -->
+  <rect x="160" y="260" width="30" height="30" fill="#AAAAAA" />
+  
+  <!-- Document icon -->
+  <rect x="280" y="160" width="30" height="30" fill="#AAAAAA" />
+  
+  <!-- Small dots around the clock -->
+  <circle cx="140" cy="140" r="8" fill="#1A3B5C" />
+  <circle cx="310" cy="140" r="8" fill="#1A3B5C" />
+  <circle cx="140" cy="310" r="8" fill="#1A3B5C" />
+  <circle cx="310" cy="310" r="8" fill="#1A3B5C" />
+  <circle cx="225" cy="100" r="8" fill="#1A3B5C" />
+  
+  <!-- Plus and circle symbols -->
+  <text x="350" y="100" font-family="Arial" font-size="24" fill="#FF9900">+</text>
+  <circle cx="100" cy="100" r="8" stroke="#AAAAAA" stroke-width="2" fill="none" />
+  
+  <!-- Text at the bottom -->
+  <text x="30" y="370" font-family="Arial" font-weight="bold" font-size="60" fill="#1A3B5C">E ROSTER</text>
+  
+  <!-- Blue rectangle with text -->
+  <rect x="30" y="380" width="390" height="40" fill="#4285F4" />
+  <text x="50" y="410" font-family="Arial" font-weight="bold" font-size="24" fill="white">SMART SCHEDULING SOLUTION</text>
+</svg>

@@ -101,10 +101,16 @@ const EmployeeShifts = () => {
   return (
     <AnimatedTransition className="max-w-4xl mx-auto">
       <div className="mb-8 text-center">
-        <div className="inline-flex items-center justify-center mb-2 text-primary bg-primary/10 p-2 rounded-lg">
-          <Calendar size={24} />
+        <div className="inline-flex items-center justify-center mb-2 p-2 rounded-lg">
+          <img 
+            src="/images/eroster-icon.svg" 
+            alt="eRoster Logo" 
+            width="32" 
+            height="32" 
+            className="object-contain"
+          />
         </div>
-        <h1 className="text-3xl font-bold mb-2">My Shifts</h1>
+        <h1 className="text-3xl font-bold mb-2"><span className="text-primary">e</span>Roster Shifts</h1>
         <p className="text-muted-foreground">View your upcoming work schedule</p>
       </div>
       

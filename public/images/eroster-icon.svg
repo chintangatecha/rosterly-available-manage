@@ -1,0 +1,18 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Blue semi-circle -->
+  <path d="M100 20 A80 80 0 1 0 100 180" stroke="#4285F4" stroke-width="10" fill="none" />
+  
+  <!-- Clock hands -->
+  <line x1="100" y1="100" x2="150" y2="100" stroke="#4285F4" stroke-width="5" />
+  <line x1="100" y1="100" x2="100" y2="60" stroke="#4285F4" stroke-width="5" />
+  
+  <!-- Clock center -->
+  <circle cx="100" cy="100" r="5" fill="#4285F4" />
+  
+  <!-- Small dots around the clock -->
+  <circle cx="65" cy="65" r="4" fill="#1A3B5C" />
+  <circle cx="135" cy="65" r="4" fill="#1A3B5C" />
+  <circle cx="65" cy="135" r="4" fill="#1A3B5C" />
+  <circle cx="135" cy="135" r="4" fill="#1A3B5C" />
+  <circle cx="100" cy="40" r="4" fill="#1A3B5C" />
+</svg>
