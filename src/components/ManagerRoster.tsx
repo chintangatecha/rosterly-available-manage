@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { startOfWeek, subWeeks, addWeeks, addDays, format, parseISO, isEqual } from 'date-fns';
-import { Calendar, Save, LogOut } from 'lucide-react';
+import { Calendar, Save, LogOut, UserPlus } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -13,11 +13,13 @@ import { useNavigate } from 'react-router-dom';
 import RosterHeader from './roster/RosterHeader';
 import CombinedRosterTable from './roster/CombinedRosterTable';
 import AddShiftDialog from './roster/AddShiftDialog';
+import AddEmployeeDialog from './roster/AddEmployeeDialog';
 import { useEmployeeData } from './roster/hooks/useEmployeeData';
 import { useShiftManagement } from './roster/hooks/useShiftManagement';
 
 const ManagerRoster: React.FC = () => {
   const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
+  const [showAddEmployeeDialog, setShowAddEmployeeDialog] = useState(false);
   
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -96,7 +98,17 @@ const ManagerRoster: React.FC = () => {
         <h1 className="text-3xl font-bold mb-2">Roster Management</h1>
         <p className="text-muted-foreground">Create and manage your team's schedule</p>
         
-        <div className="mt-4 flex justify-end">
+        <div className="mt-4 flex justify-between items-center">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setShowAddEmployeeDialog(true)} 
+            className="gap-2"
+          >
+            <UserPlus size={16} />
+            Add Employee
+          </Button>
+          
           <Button variant="outline" size="sm" onClick={handleLogout} className="gap-2">
             <LogOut size={16} />
             Logout
@@ -146,6 +158,13 @@ const ManagerRoster: React.FC = () => {
         onChange={handleShiftFormChange}
         onSubmit={handleAddShift}
         isEmployeeAvailable={!!selectedDay && !!selectedEmployee && isEmployeeAvailable(selectedEmployee.id, selectedDay)}
+      />
+      
+      {/* Add Employee Dialog */}
+      <AddEmployeeDialog
+        isOpen={showAddEmployeeDialog}
+        onClose={() => setShowAddEmployeeDialog(false)}
+        onEmployeeAdded={fetchEmployees}
       />
     </AnimatedTransition>
   );
